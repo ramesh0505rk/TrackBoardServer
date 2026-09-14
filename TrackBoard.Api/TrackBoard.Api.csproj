@@ -10,4 +10,9 @@
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.11" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\TrackBoard.Application\TrackBoard.Application.csproj" />
+    <ProjectReference Include="..\TrackBoard.Domain\TrackBoard.Domain.csproj" />
+  </ItemGroup>
+
 </Project>
