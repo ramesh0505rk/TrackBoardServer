@@ -1,11 +1,15 @@
-﻿using System;
+﻿using Microsoft.Extensions.DependencyInjection;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace TrackBoard.Application.Extensions
 {
-    public class ApplicationServiceExtension
+    public static class ApplicationServiceExtension
     {
-
+        public static IServiceCollection AddApplicationServices(this IServiceCollection services)
+        {
+            return services;
+        }
     }
 }
