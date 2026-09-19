@@ -4,7 +4,7 @@ using System.Text;
 
 namespace TrackBoard.Application.ResponseDTOs
 {
-    public class SignInDTO : BaseDTO
+    public class SignUpDTO : BaseDTO
     {
         public string AccessToken { get; set; } = string.Empty;
     }

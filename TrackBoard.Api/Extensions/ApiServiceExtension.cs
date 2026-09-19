@@ -1,4 +1,7 @@
-﻿namespace TrackBoard.Api.Extensions
+﻿using TrackBoard.Application.Extensions;
+using TrackBoard.Infrastructure.Extensions;
+
+namespace TrackBoard.Api.Extensions
 {
     public static class ApiServiceExtension
     {
@@ -6,6 +9,8 @@
         {
             services.AddCorsExtension(configuration);
             services.AddAuthentication(configuration);
+            services.AddApplicationServices();
+            services.AddInfrastructureServices();
             return services;
         }
     }
