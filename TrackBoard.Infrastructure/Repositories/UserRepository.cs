@@ -56,7 +56,14 @@ namespace TrackBoard.Infrastructure.Repositories
 
                 var hashedPassword = _passwordHasher.HashPassword(request.Password);
 
-                var query = "INSERT INTO Users (Id, UserName, FirstName, LastName, Email, Password) OUTPUT INSERTED.* VALUES (@UserId, @UserName, @FirstName, @LastName, @Email, @Password)";
+                var query = @"INSERT INTO Users (Id, UserName, FirstName, LastName, Email, Password) 
+                             OUTPUT INSERTED.Id AS UserId, 
+                                    INSERTED.UserName, 
+                                    INSERTED.FirstName, 
+                                    INSERTED.LastName, 
+                                    INSERTED.Email, 
+                                    INSERTED.Password 
+                             VALUES (@UserId, @UserName, @FirstName, @LastName, @Email, @Password)";
 
                 var parameters = new DynamicParameters();
                 parameters.Add("@UserId", Guid.NewGuid());
@@ -117,7 +124,7 @@ namespace TrackBoard.Infrastructure.Repositories
                             FROM Users WHERE Id = @UserId";
 
                 var parameters = new DynamicParameters();
-                parameters.Add("@UserId");
+                parameters.Add("@UserId",userId);
 
                 var result = await connection.QueryFirstOrDefaultAsync<User>(query, parameters);
                 return result;

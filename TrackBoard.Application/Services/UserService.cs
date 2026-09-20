@@ -117,7 +117,7 @@ namespace TrackBoard.Application.Services
 
             var claims = new[]
             {
-                new Claim("UserId",user.UserId),
+                new Claim("UserId",user.UserId.ToString()),
                 new Claim("UserName",user.UserName),
                 new Claim("FirstName",user.FirstName),
                 new Claim("LastName",user.LastName),
