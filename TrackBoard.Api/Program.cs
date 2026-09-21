@@ -32,6 +32,8 @@ builder.Services.AddApiServices(builder.Configuration);
 var app = builder.Build();
 app.UseMiddleware<GlobalExceptionMiddleware>();
 
+app.UseCors("AllowedOrigins");
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {

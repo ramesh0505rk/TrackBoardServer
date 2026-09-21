@@ -6,7 +6,7 @@
         {
             services.AddCors(options =>
             {
-                options.AddPolicy("AllowAllOrigins", builder =>
+                options.AddPolicy("AllowedOrigins", builder =>
                 {
                     var origins = configuration.GetSection("CORS:AllowedOrigins").Get<string[]>();
                     builder.WithOrigins(origins: origins)
