@@ -26,5 +26,12 @@ namespace TrackBoard.Api.Controllers
         {
             return Ok(await _userService.SignUp(request, cancellationToken));
         }
+
+        [HttpGet("Exists")]
+        public async Task<IActionResult> UserNameExists([FromQuery] string UserName, CancellationToken cancellationToken)
+        {
+            var exists = await _userService.UserNameExists(UserName, cancellationToken);
+            return Ok(exists);
+		}
     }
 }

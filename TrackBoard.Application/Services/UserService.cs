@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
@@ -109,7 +110,21 @@ namespace TrackBoard.Application.Services
             }
         }
 
-        private string GenerateToken(User user)
+		public async Task<bool> UserNameExists(string UserName, CancellationToken cancellationToken)
+		{
+			try
+			{
+				var userNameExists = await _userRepository.UserNameExists(UserName, cancellationToken);
+				return userNameExists;
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error thrown in UserService.UserNameExists. Input parameters: {InputParams}", JsonConvert.SerializeObject(new { UserName }));
+				throw;
+			}
+		}
+
+		private string GenerateToken(User user)
         {
             var jwtSettings = _configuration.GetSection("Jwt");
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"]));
