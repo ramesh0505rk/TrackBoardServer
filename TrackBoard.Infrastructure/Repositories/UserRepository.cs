@@ -74,6 +74,7 @@ namespace TrackBoard.Infrastructure.Repositories
 				parameters.Add("@Password", hashedPassword);
 
 				var result = await connection.QueryFirstOrDefaultAsync<User>(query, parameters);
+				result.OrgId = null;
 				return result;
 			}
 			catch (Exception ex)
@@ -120,6 +121,7 @@ namespace TrackBoard.Infrastructure.Repositories
 				_logger.LogInformation("Information in UserRepository.GetUserDetailsByUserId. Input parameters: UserId = {UserId}", userId);
 				using var connection = await _dbConnectionFactory.GetOpenConnection(cancellationToken);
 
+				// Get user details by userId
 				var query = @"SELECT Id AS UserId, UserName, FirstName, LastName, Email 
                             FROM Users WHERE Id = @UserId";
 
@@ -127,6 +129,16 @@ namespace TrackBoard.Infrastructure.Repositories
 				parameters.Add("@UserId", userId);
 
 				var result = await connection.QueryFirstOrDefaultAsync<User>(query, parameters);
+
+				// Get the user's orgId by userId
+				var getOrgId = @"SELECT OrgId FROM dbo.OrganizationMembers WHERE UserId = @UserId";
+
+				var getOrgIdParams = new DynamicParameters();
+				getOrgIdParams.Add("@UserId", userId);
+
+				var orgId = await connection.ExecuteScalarAsync<Guid?>(getOrgId, getOrgIdParams);
+				result.OrgId = orgId;
+
 				return result;
 			}
 			catch (Exception ex)
@@ -142,7 +154,7 @@ namespace TrackBoard.Infrastructure.Repositories
 			try
 			{
 				using var connection = await _dbConnectionFactory.GetOpenConnection(cancellationToken);
-				var query = @"SELECT COUNT(1) FROM [Users] WHERE UserName = @UserName";
+				var query = @"SELECT COUNT(1) FROM [Users] WHERE UserName COLLATE Latin1_General_CS_AS = @UserName";
 
 				var parameters = new DynamicParameters();
 				parameters.Add("@UserName", UserName);
