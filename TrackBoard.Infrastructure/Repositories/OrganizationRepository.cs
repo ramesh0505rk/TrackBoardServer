@@ -26,7 +26,7 @@ namespace TrackBoard.Infrastructure.Repositories
         {
             try
             {
-                _logger.LogInformation("Information in UserRepository.CheckUserExists. Input parameters: {orgName}", orgName);
+                _logger.LogInformation("Information in OrganizationRepository.CheckUserExists. Input parameters: {orgName}", orgName);
 
                 using var connection = await _dbConnectionFactory.GetOpenConnection(cancellationToken);
 
@@ -47,15 +47,68 @@ namespace TrackBoard.Infrastructure.Repositories
             }
         }
 
+        public async Task<bool> CheckAlreadyAMember(string userId, CancellationToken cancellationToken)
+        {
+            try
+            {
+                _logger.LogInformation("Information in OrganizationRepository.CheckAlreadyAMember. Input parameters: {userId}", userId);
+
+                using var connection = await _dbConnectionFactory.GetOpenConnection(cancellationToken);
+
+                var query = "SELECT COUNT(1) FROM OrganizationMembers WHERE UserId = @UserId";
+
+                var parameters = new DynamicParameters();
+                parameters.Add("@UserId", userId);
+
+                var result = await connection.ExecuteScalarAsync<int>(query, parameters, commandType: CommandType.Text);
+
+                return result > 0;
+            }
+            catch (Exception ex)
+            {
+                var inputParams = new { userId };
+                _logger.LogError(ex, "Error thrown in OrganizationRepository.CheckAlreadyAMember. Input parameters: {InputParams}", JsonConvert.SerializeObject(inputParams));
+                throw;
+            }
+        }
+
         public async Task<Guid> RegisterOrganization(OrganizationRegisterRequest request, CancellationToken cancellationToken)
         {
             try
             {
+                _logger.LogInformation("Information in OrganizationRepository.RegisterOrganization. Input parameters: {InputParams}", JsonConvert.SerializeObject(request));
 
+                using var connection = await _dbConnectionFactory.GetOpenConnection(cancellationToken);
+
+                var query = @"INSERT INTO Organizations(Id, [Name]) 
+                            OUTPUT INSERTED.Id AS OrgId
+                            VALUES(@OrgId, @Name)";
+
+                var parameters = new DynamicParameters();
+                parameters.Add("@OrgId", Guid.NewGuid());
+                parameters.Add("@Name", request.OrganizationName);
+
+                var result = await connection.ExecuteScalarAsync<Guid>(query, parameters, commandType: CommandType.Text);
+                return result;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.LogError(ex, "Error thrown in OrganizationRepository.RegisterOrganization. Input parameters: {InputParams}", JsonConvert.SerializeObject(request));
+                throw;
+            }
+        }
+
+        public async Task<bool> AddOrganizationMember(string orgId, string userId, string role)
+        {
+            try
+            {
+                var inputParams = new { orgId, userId, role };
+                _logger.LogInformation("Information in OrganizationRepository.AddOrganizationMember. Input parameters: {InputParams}", JsonConvert.SerializeObject(inputParams));
+            }
+            catch (Exception ex)
+            {
+                var inputParams = new { orgId, userId, role };
+                _logger.LogError(ex, "Error thrown in OrganizationRepository.AddOrganizationMember. Input parameters: {InputParams}", JsonConvert.SerializeObject(inputParams));
                 throw;
             }
         }

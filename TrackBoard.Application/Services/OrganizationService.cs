@@ -37,6 +37,20 @@ namespace TrackBoard.Application.Services
             }
         }
 
+        private async Task<bool> CheckAlreadyAMember(string userId, CancellationToken cancellationToken)
+        {
+            try
+            {
+                var alreadyAMember = await _organizationRepository.
+            }
+            catch (Exception ex)
+            {
+                var inputParams = new { userId };
+                _logger.LogError(ex, "Error thrown in OrganizationService.CheckAlreadyAMember. Input parameters: {InputParams}", JsonConvert.SerializeObject(inputParams));
+                throw;
+            }
+        }
+
         private async Task<Guid> RegisterOrganization(OrganizationRegisterRequest request, CancellationToken cancellationToken)
         {
             try
@@ -47,6 +61,21 @@ namespace TrackBoard.Application.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error thrown in OrganizationService.RegisterOrganization. Input parameters: {InputParams}", JsonConvert.SerializeObject(request));
+                throw;
+            }
+        }
+
+        private async Task<bool> AddOrganizationMember(string orgId, string userId, string role)
+        {
+            try
+            {
+                var memberAdded = await _organizationRepository.AddOrganizationMember(orgId, userId, role);
+                return memberAdded;
+            }
+            catch (Exception ex)
+            {
+                var inputParams = new { orgId, userId, role };
+                _logger.LogError(ex, "Error thrown in OrganizationService.AddOrganizationMember. Input parameters: {InputParams}", JsonConvert.SerializeObject(inputParams));
                 throw;
             }
         }
