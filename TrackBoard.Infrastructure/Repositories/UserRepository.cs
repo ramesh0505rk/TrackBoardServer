@@ -74,7 +74,7 @@ namespace TrackBoard.Infrastructure.Repositories
 				parameters.Add("@Password", hashedPassword);
 
 				var result = await connection.QueryFirstOrDefaultAsync<User>(query, parameters);
-				result.OrgId = null;
+				result!.OrgId = null;
 				return result;
 			}
 			catch (Exception ex)
@@ -137,7 +137,7 @@ namespace TrackBoard.Infrastructure.Repositories
 				getOrgIdParams.Add("@UserId", userId);
 
 				var orgId = await connection.ExecuteScalarAsync<Guid?>(getOrgId, getOrgIdParams);
-				result.OrgId = orgId;
+				result!.OrgId = orgId;
 
 				return result;
 			}

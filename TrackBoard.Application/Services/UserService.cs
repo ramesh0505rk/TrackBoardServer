@@ -127,7 +127,7 @@ namespace TrackBoard.Application.Services
 		private string GenerateToken(User user)
 		{
 			var jwtSettings = _configuration.GetSection("Jwt");
-			var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"]));
+			var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"]!));
 			var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
 			var claims = new[]
@@ -144,7 +144,7 @@ namespace TrackBoard.Application.Services
 				jwtSettings["Issuer"],
 				jwtSettings["Audience"],
 				claims,
-				expires: DateTime.Now.AddMinutes(int.Parse(jwtSettings["ExpireInMinutes"])),
+				expires: DateTime.Now.AddMinutes(int.Parse(jwtSettings["ExpireInMinutes"]!)),
 				signingCredentials: creds
 			);
 

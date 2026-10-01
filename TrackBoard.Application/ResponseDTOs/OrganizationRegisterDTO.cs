@@ -4,7 +4,7 @@ using System.Text;
 
 namespace TrackBoard.Application.ResponseDTOs
 {
-    public class OrganizationRegisterDTO
+    public class OrganizationRegisterDTO : BaseDTO
     {
         public bool Created { get; set; }
     }

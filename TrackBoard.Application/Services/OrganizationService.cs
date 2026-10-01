@@ -12,10 +12,20 @@ namespace TrackBoard.Application.Services
     {
         private readonly ILogger<OrganizationService> _logger;
         private readonly IOrganizationRepository _organizationRepository;
+
+        public OrganizationService(IOrganizationRepository organizationRepository, ILogger<OrganizationService> logger)
+        {
+            _logger = logger;
+            _organizationRepository = organizationRepository;
+        }
+
         public async Task<OrganizationRegisterDTO> Register(OrganizationRegisterRequest request, CancellationToken cancellationToken)
         {
             await CheckOrgNameExists(request.OrganizationName, cancellationToken);
-            var orgId = RegisterOrganization(request, cancellationToken);
+            await CheckAlreadyAMember(request.UserId, cancellationToken);
+            var orgId = await RegisterOrganization(request, cancellationToken);
+            var created = await AddOrganizationMember(orgId, request.UserId, "Admin", cancellationToken);
+            return CreateRegisterSuccessResponse(created);
         }
 
         private async Task CheckOrgNameExists(string orgName, CancellationToken cancellationToken)
@@ -37,11 +47,16 @@ namespace TrackBoard.Application.Services
             }
         }
 
-        private async Task<bool> CheckAlreadyAMember(string userId, CancellationToken cancellationToken)
+        private async Task CheckAlreadyAMember(Guid userId, CancellationToken cancellationToken)
         {
             try
             {
-                var alreadyAMember = await _organizationRepository.
+                var alreadyAMember = await _organizationRepository.CheckAlreadyAMember(userId, cancellationToken);
+                if (alreadyAMember)
+                {
+                    _logger.LogError("This user is already a member of another organization. UserId: {UserId}", userId);
+                    throw new BadRequestCustomException(["This user is already a member of another organization."]);
+                }
             }
             catch (Exception ex)
             {
@@ -65,11 +80,11 @@ namespace TrackBoard.Application.Services
             }
         }
 
-        private async Task<bool> AddOrganizationMember(string orgId, string userId, string role)
+        private async Task<bool> AddOrganizationMember(Guid orgId, Guid userId, string role, CancellationToken cancellationToken)
         {
             try
             {
-                var memberAdded = await _organizationRepository.AddOrganizationMember(orgId, userId, role);
+                var memberAdded = await _organizationRepository.AddOrganizationMember(orgId, userId, role, cancellationToken);
                 return memberAdded;
             }
             catch (Exception ex)
@@ -78,6 +93,16 @@ namespace TrackBoard.Application.Services
                 _logger.LogError(ex, "Error thrown in OrganizationService.AddOrganizationMember. Input parameters: {InputParams}", JsonConvert.SerializeObject(inputParams));
                 throw;
             }
+        }
+
+        private OrganizationRegisterDTO CreateRegisterSuccessResponse(bool isOrgCreated)
+        {
+            return new OrganizationRegisterDTO
+            {
+                Created = isOrgCreated,
+                RequestId = Guid.NewGuid().ToString(),
+                ResponseMessage = "Organization registered successfully"
+            };
         }
     }
 }

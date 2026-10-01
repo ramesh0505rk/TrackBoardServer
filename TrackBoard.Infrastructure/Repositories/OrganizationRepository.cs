@@ -47,7 +47,7 @@ namespace TrackBoard.Infrastructure.Repositories
             }
         }
 
-        public async Task<bool> CheckAlreadyAMember(string userId, CancellationToken cancellationToken)
+        public async Task<bool> CheckAlreadyAMember(Guid userId, CancellationToken cancellationToken)
         {
             try
             {
@@ -98,12 +98,25 @@ namespace TrackBoard.Infrastructure.Repositories
             }
         }
 
-        public async Task<bool> AddOrganizationMember(string orgId, string userId, string role)
+        public async Task<bool> AddOrganizationMember(Guid orgId, Guid userId, string role, CancellationToken cancellationToken)
         {
             try
             {
                 var inputParams = new { orgId, userId, role };
                 _logger.LogInformation("Information in OrganizationRepository.AddOrganizationMember. Input parameters: {InputParams}", JsonConvert.SerializeObject(inputParams));
+
+                using var connection = await _dbConnectionFactory.GetOpenConnection(cancellationToken);
+
+                var query = @"INSERT INTO OrganizationMembers (UserId, OrgId, [Role])
+                            VALUES (@UserId, @OrgId, @Role)";
+
+                var parameters = new DynamicParameters();
+                parameters.Add("@UserId", userId);
+                parameters.Add("@OrgId", orgId);
+                parameters.Add("@Role", role);
+
+                var result = await connection.ExecuteAsync(query, parameters, commandType: CommandType.Text);
+                return result > 0;
             }
             catch (Exception ex)
             {

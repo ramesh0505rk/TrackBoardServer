@@ -12,10 +12,11 @@ namespace TrackBoard.Infrastructure.Extensions
         {
             // Register repositories
             services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<IOrganizationRepository, OrganizationRepository>();
 
 
             // Register DbConnectionFactory
-            services.AddScoped<IDbConnectionFactory,DbConnectionFactory>();
+            services.AddScoped<IDbConnectionFactory, DbConnectionFactory>();
 
             // Register helpers
             services.AddScoped<IPasswordHasher, PasswordHasher>();

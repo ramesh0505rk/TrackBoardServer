@@ -8,8 +8,8 @@ namespace TrackBoard.Infrastructure.Interfaces
     public interface IOrganizationRepository
     {
         Task<bool> CheckOrgNameExists(string orgName, CancellationToken cancellationToken);
-        Task<bool> CheckAlreadyAMember(string userId, CancellationToken cancellationToken);
+        Task<bool> CheckAlreadyAMember(Guid userId, CancellationToken cancellationToken);
         Task<Guid> RegisterOrganization(OrganizationRegisterRequest request, CancellationToken cancellationToken);
-        Task<bool> AddOrganizationMember(string orgId, string userId, string role);
+        Task<bool> AddOrganizationMember(Guid orgId, Guid userId, string role, CancellationToken cancellationToken);
     }
 }
