@@ -5,18 +5,23 @@ using TrackBoard.Application.ResponseDTOs;
 using TrackBoard.Domain.Common.ExceptionHandling;
 using TrackBoard.Domain.Entities;
 using TrackBoard.Infrastructure.Interfaces;
+using TrackBoard.Infrastructure.Repositories;
 
 namespace TrackBoard.Application.Services
 {
     public class OrganizationService : IOrganizationService
     {
         private readonly ILogger<OrganizationService> _logger;
+        private readonly ITokenService _tokenService;
         private readonly IOrganizationRepository _organizationRepository;
+        private readonly IUserRepository _userRepository;
 
-        public OrganizationService(IOrganizationRepository organizationRepository, ILogger<OrganizationService> logger)
+        public OrganizationService(ITokenService tokenService, IOrganizationRepository organizationRepository, IUserRepository userRepository, ILogger<OrganizationService> logger)
         {
             _logger = logger;
+            _tokenService = tokenService;
             _organizationRepository = organizationRepository;
+            _userRepository = userRepository;
         }
 
         public async Task<OrganizationRegisterDTO> Register(OrganizationRegisterRequest request, CancellationToken cancellationToken)
@@ -25,7 +30,9 @@ namespace TrackBoard.Application.Services
             await CheckAlreadyAMember(request.UserId, cancellationToken);
             var orgId = await RegisterOrganization(request, cancellationToken);
             var created = await AddOrganizationMember(orgId, request.UserId, "Admin", cancellationToken);
-            return CreateRegisterSuccessResponse(created);
+            var user = await GetUserDetailsByUserId(request.UserId, cancellationToken);
+            var accessToken = _tokenService.GenerateToken(user);
+            return CreateRegisterSuccessResponse(created, accessToken);
         }
 
         private async Task CheckOrgNameExists(string orgName, CancellationToken cancellationToken)
@@ -95,11 +102,26 @@ namespace TrackBoard.Application.Services
             }
         }
 
-        private OrganizationRegisterDTO CreateRegisterSuccessResponse(bool isOrgCreated)
+        private async Task<User> GetUserDetailsByUserId(Guid? userId, CancellationToken cancellationToken)
+        {
+            try
+            {
+                var userDetails = await _userRepository.GetUserDetailsByUserId(userId, cancellationToken);
+                return userDetails;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error thrown in UserService.GetUserDetailsByUserId. Input parameters: {InputParams}", userId);
+                throw;
+            }
+        }
+
+        private OrganizationRegisterDTO CreateRegisterSuccessResponse(bool isOrgCreated, string accessToken)
         {
             return new OrganizationRegisterDTO
             {
                 Created = isOrgCreated,
+                AccessToken = accessToken,
                 RequestId = Guid.NewGuid().ToString(),
                 ResponseMessage = "Organization registered successfully"
             };

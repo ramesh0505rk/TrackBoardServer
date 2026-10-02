@@ -7,5 +7,6 @@ namespace TrackBoard.Application.ResponseDTOs
     public class OrganizationRegisterDTO : BaseDTO
     {
         public bool Created { get; set; }
+        public string AccessToken { get; set; }
     }
 }
